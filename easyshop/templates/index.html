@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyShop - Your One-Stop Marketplace</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛒</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            min-height: 100vh;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        }
+        
+        .glass-input {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .glow-on-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .glow-on-hover:hover {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .password-strength {
+            height: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        
+        .dark .glass-card {
+            background: rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .dark .glass-input {
+            background: rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .toast {
+            animation: fadeInOut 3s ease-in-out;
+        }
+        
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; transform: translateY(20px); }
+            10%, 90% { opacity: 1; transform: translateY(0); }
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+        }
+        
+        .modal {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .modal.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-20px);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+    <!-- Navbar -->
+    <nav class="glass-card fixed top-0 left-0 right-0 z-50">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <a href="#" class="flex items-center space-x-2">
+                        <span class="text-2xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">EasyShop</span>
+                    </a>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="#home" class="nav-link hover:text-blue-500 transition">Home</a>
+                    <a href="#products" class="nav-link hover:text-blue-500 transition">Products</a>
+                    <a href="#add-product" class="nav-link hover:text-blue-500 transition">Add Product</a>
+                    <a href="#login" class="nav-link hover:text-blue-500 transition">Login</a>
+                    <a href="#register" class="nav-link hover:text-blue-500 transition">Register</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <select id="language-switcher" class="glass-input px-3 py-1 rounded-full text-sm focus:outline-none">
+                            <option value="en">English</option>
+                            <option value="uz">O'zbekcha</option>
+                            <option value="ru">Русский</option>
+                        </select>
+                    </div>
+                    
+                    <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                        <i class="fas fa-moon dark:hidden"></i>
+                        <i class="fas fa-sun hidden dark:block"></i>
+                    </button>
+                    
+                    <div class="md:hidden">
+                        <button id="mobile-menu-button" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mobile menu -->
+            <div id="mobile-menu" class="hidden md:hidden mt-4 pb-2">
+                <a href="#home" class="block py-2 hover:text-blue-500 transition">Home</a>
+                <a href="#products" class="block py-2 hover:text-blue-500 transition">Products</a>
+                <a href="#add-product" class="block py-2 hover:text-blue-500 transition">Add Product</a>
+                <a href="#login" class="block py-2 hover:text-blue-500 transition">Login</a>
+                <a href="#register" class="block py-2 hover:text-blue-500 transition">Register</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-20 pb-10">
+        <!-- Homepage -->
+        <section id="home" class="container mx-auto px-4 py-10 relative">
+            <div id="particles-js"></div>
+            
+            <div class="text-center mb-12">
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">Hello, welcome to <span class="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">EasyShop</span></h1>
+                <p class="text-xl md:text-2xl">Your one-stop marketplace for everything!</p>
+            </div>
+            
+            <!-- Search and Filter -->
+            <div class="glass-card rounded-xl p-6 mb-8">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                    <div class="relative flex-grow md:mr-4">
+                        <input type="text" placeholder="Search products..." class="glass-input w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button class="absolute right-3 top-3 text-gray-500 hover:text-blue-500">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="flex space-x-2">
+                        <select class="glass-input px-3 py-2 rounded-lg focus:outline-none">
+                            <option>Sort by</option>
+                            <option>Price: Low to High</option>
+                            <option>Price: High to Low</option>
+                            <option>Newest First</option>
+                        </select>
+                        
+                        <select class="glass-input px-3 py-2 rounded-lg focus:outline-none">
+                            <option>Filter by</option>
+                            <option>Electronics</option>
+                            <option>Clothing</option>
+                            <option>Home & Garden</option>
+                            <option>Books</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Promo Slider -->
+            <div class="glass-card rounded-xl p-4 mb-12 overflow-hidden">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold">Special Offers</h2>
+                    <div class="flex space-x-2">
+                        <button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 text-white">
+                        <h3 class="text-xl font-bold mb-2">Summer Sale</h3>
+                        <p class="mb-4">Up to 50% off on selected items</p>
+                        <button class="px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-opacity-90 transition">Shop Now</button>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-green-500 to-teal-600 rounded-xl p-6 text-white">
+                        <h3 class="text-xl font-bold mb-2">New Arrivals</h3>
+                        <p class="mb-4">Discover our latest products</p>
+                        <button class="px-4 py-2 bg-white text-green-600 rounded-lg font-medium hover:bg-opacity-90 transition">Explore</button>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-orange-500 to-pink-600 rounded-xl p-6 text-white">
+                        <h3 class="text-xl font-bold mb-2">Limited Time</h3>
+                        <p class="mb-4">Flash sale - 24 hours only!</p>
+                        <button class="px-4 py-2 bg-white text-orange-600 rounded-lg font-medium hover:bg-opacity-90 transition">Grab Deal</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product Grid -->
+            <h2 class="text-2xl font-bold mb-6">Featured Products</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Product Card 1 -->
+                <div class="product-card glass-card rounded-xl overflow-hidden transition duration-300 hover:shadow-lg">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1099&q=80" alt="Product" class="w-full h-48 object-cover">
+                        <button class="absolute top-2 right-2 p-2 bg-white bg-opacity-80 rounded-full hover:bg-opacity-100 transition">
+                            <i class="far fa-heart text-red-500"></i>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-semibold text-lg mb-1">Smart Watch Series 5</h3>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm mb-2">Advanced smartwatch with health monitoring</p>
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-blue-600">$299.99</span>
+                            <button class="px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition glow-on-hover">
+                                <i class="fas fa-shopping-cart mr-1"></i> Buy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product Card 2 -->
+                <div class="product-card glass-card rounded-xl overflow-hidden transition duration-300 hover:shadow-lg">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1064&q=80" alt="Product" class="w-full h-48 object-cover">
+                        <button class="absolute top-2 right-2 p-2 bg-white bg-opacity-80 rounded-full hover:bg-opacity-100 transition">
+                            <i class="far fa-heart text-red-500"></i>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-semibold text-lg mb-1">Wireless Headphones</h3>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm mb-2">Noise cancelling with 30h battery life</p>
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-blue-600">$179.99</span>
+                            <button class="px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition glow-on-hover">
+                                <i class="fas fa-shopping-cart mr-1"></i> Buy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product Card 3 -->
+                <div class="product-card glass-card rounded-xl overflow-hidden transition duration-300 hover:shadow-lg">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1067&q=80" alt="Product" class="w-full h-48 object-cover">
+                        <button class="absolute top-2 right-2 p-2 bg-white bg-opacity-80 rounded-full hover:bg-opacity-100 transition">
+                            <i class="far fa-heart text-red-500"></i>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-semibold text-lg mb-1">Professional Camera</h3>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm mb-2">24.2MP DSLR with 18-55mm lens</p>
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-blue-600">$599.99</span>
+                            <button class="px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition glow-on-hover">
+                                <i class="fas fa-shopping-cart mr-1"></i> Buy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product Card 4 -->
+                <div class="product-card glass-card rounded-xl overflow-hidden transition duration-300 hover:shadow-lg">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1625772452859-1c03d5bf1137?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Product" class="w-full h-48 object-cover">
+                        <button class="absolute top-2 right-2 p-2 bg-white bg-opacity-80 rounded-full hover:bg-opacity-100 transition">
+                            <i class="far fa-heart text-red-500"></i>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-semibold text-lg mb-1">Gaming Laptop</h3>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm mb-2">RTX 3060, 16GB RAM, 1TB SSD</p>
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-blue-600">$1299.99</span>
+                            <button class="px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition glow-on-hover">
+                                <i class="fas fa-shopping-cart mr-1"></i> Buy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-10">
+                <button class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition glow-on-hover">
+                    View All Products
+                </button>
+            </div>
+        </section>
+        
+        <!-- Login Modal -->
+        <div id="login-modal" class="modal fixed inset-0 flex items-center justify-center z-50 hidden">
+            <div class="absolute inset-0 bg-black bg-opacity-70 backdrop-blur-sm"></div>
+            <div class="relative z-10 w-full max-w-md px-8 py-10">
+                <div class="glass-card border border-white/10 rounded-2xl p-8 shadow-lg shadow-purple-500/10 relative overflow-hidden">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-500 opacity-20 blur-lg"></div>
+                    
+                    <button id="close-login" class="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 transition">
+                        <i class="fas fa-times text-white/70 hover:text-white"></i>
+                    </button>
+                    
+                    <div class="relative z-10">
+                        <h2 class="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+                            <i class="fas fa-user-shield mr-2"></i> Secure Login
+                        </h2>
+                        
+                        <form id="login-form" method="POST" action="/login" class="space-y-6">
+                            <div class="space-y-2">
+                                <label for="login-email" class="block text-sm font-medium text-white/80">Email</label>
+                                <div class="relative">
+                                    <input type="email" id="login-email" name="email" 
+                                           class="glass-input w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-white placeholder-white/40"
+                                           placeholder="your@email.com" required>
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <i class="fas fa-at text-white/40"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label for="login-password" class="block text-sm font-medium text-white/80">Password</label>
+                                <div class="relative">
+                                    <input type="password" id="login-password" name="password"
+                                           class="glass-input w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-white placeholder-white/40"
+                                           placeholder="••••••••" required>
+                                    <button type="button" id="toggle-login-password" class="absolute right-3 top-3 text-white/40 hover:text-white">
+                                        <i class="far fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="flex justify-between items-center mt-2 text-sm">
+                                    <label class="flex items-center space-x-2 cursor-pointer">
+                                        <input type="checkbox" name="remember" class="rounded bg-white/10 border-white/20 text-purple-500 focus:ring-purple-500">
+                                        <span class="text-white/70">Remember me</span>
+                                    </label>
+                                    <a href="#" class="text-purple-400 hover:text-purple-300 hover:underline transition-colors">
+                                        Forgot password?
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" 
+                                    class="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-medium rounded-lg hover:opacity-90 transition-all duration-300 shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 flex items-center justify-center space-x-2">
+                                <i class="fas fa-sign-in-alt"></i>
+                                <span>Login</span>
+                            </button>
+                            
+                            <div class="text-center text-sm text-white/70">
+                                Don't have an account? 
+                                <a href="#register" class="text-purple-300 hover:text-purple-200 underline register-link transition-colors">
+                                    Register
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Register Modal -->
+        <div id="register-modal" class="modal fixed inset-0 flex items-center justify-center z-50 hidden">
+            <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+            <div class="glass-card rounded-xl p-8 max-w-md w-full relative z-10">
+                <button id="close-register" class="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                    <i class="fas fa-times"></i>
+                </button>
+                
+                <h2 class="text-2xl font-bold mb-6 text-center">Create an Account</h2>
+                
+                <form id="register-form" method="POST" action="/register" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label for="first-name" class="block text-sm font-medium text-white/80">First Name</label>
+                            <div class="relative">
+                                <input type="text" id="first-name" name="first_name" 
+                                       class="glass-input w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-white placeholder-white/40"
+                                       placeholder="John" required>
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <i class="fas fa-user text-white/40"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="last-name" class="block text-sm font-medium text-white/80">Last Name</label>
+                            <div class="relative">
+                                <input type="text" id="last-name" name="last_name" 
+                                       class="glass-input w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-white placeholder-white/40"
+                                       placeholder="Doe" required>
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <i class="fas fa-user text-white/40"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <label for="register-email" class="block text-sm font-medium text-white/80">Email</label>
+                        <div class="relative">
+                            <input type="email" id="register-email" name="email"
+                                   class="glass-input w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-white placeholder-white/40"
+                                   placeholder="your@email.com" required>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <i class="fas fa-at text-white/40"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <label for="register-password" class="block text-sm font-medium text-white/80">Password</label>
+                        <div class="relative">
+                            <input type="password" id="register-password" name="password"
+                                   class="glass-input w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-white placeholder-white/40"
+                                   placeholder="••••••••" required>
+                            <button type="button" id="toggle-register-password" class="absolute right-3 top-3 text-white/40 hover:text-white">
+                                <i class="far fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2">
+                            <div class="flex items-center mb-1">
+                                <div id="password-strength" class="password-strength w-full h-1 bg-gray-300 rounded-full">
+                                    <div class="h-full rounded-full w-0"></div>
+                                </div>
+                            </div>
+                            <div class="text-xs text-white/70">
+                                <span id="password-strength-text">Password strength: </span>
+                                <span id="password-hint" class="hidden">Use 8+ characters with mix of letters, numbers & symbols</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <label for="confirm-password" class="block text-sm font-medium text-white/80">Confirm Password</label>
+                        <div class="relative">
+                            <input type="password" id="confirm-password"
+                                   class="glass-input w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-white placeholder-white/40"
+                                   placeholder="••••••••" required>
+                            <button type="button" id="toggle-confirm-password" class="absolute right-3 top-3 text-white/40 hover:text-white">
+                                <i class="far fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <input type="checkbox" id="terms" name="terms" class="rounded bg-white/10 border-white/20 text-purple-500 focus:ring-purple-500" required>
+                        <label for="terms" class="ml-2 text-sm text-white/70">I agree to the <a href="#" class="text-purple-400 hover:text-purple-300 hover:underline">Terms of Service</a> and <a href="#" class="text-purple-400 hover:text-purple-300 hover:underline">Privacy Policy</a></label>
+                    </div>
+                    
+                    <button type="submit" 
+                            class="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-medium rounded-lg hover:opacity-90 transition-all duration-300 shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 flex items-center justify-center space-x-2">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Register</span>
+                    </button>
+                    
+                    <div class="text-center text-sm text-white/70">
+                        Already have an account? 
+                        <a href="#login" class="text-purple-300 hover:text-purple-200 underline login-link transition-colors">
+                            Login
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Add Product Section -->
+        <section id="add-product" class="container mx-auto px-4 py-10 hidden">
+            <div class="glass-card rounded-xl p-6 max-w-3xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6">Add New Product</h2>
+                
+                <form id="product-form" class="space-y-4">
+                    <div>
+                        <label for="product-name" class="block mb-1">Product Name</label>
+                        <input type="text" id="product-name" class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter product name" required>
+                    </div>
+                    
+                    <div>
+                        <label for="product-price" class="block mb-1">Price ($)</label>
+                        <input type="number" id="product-price" class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="0.00" min="0" step="0.01" required>
+                    </div>
+                    
+                    <div>
+                        <label for="product-category" class="block mb-1">Category</label>
+                        <select id="product-category" class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <option value="">Select a category</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="clothing">Clothing</option>
+                            <option value="home">Home & Garden</option>
+                            <option value="books">Books</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="product-description" class="block mb-1">Description</label>
+                        <textarea id="product-description" class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" rows="4" placeholder="Enter product description" required></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block mb-1">Product Image</label>
+                        <div class="file-input-wrapper">
+                            <label for="product-image" class="cursor-pointer">
+                                <div class="glass-input w-full px-4 py-12 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 text-center hover:border-blue-500 transition">
+                                    <i class="fas fa-cloud-upload-alt text-3xl text-blue-500 mb-2"></i>
+                                    <p class="text-sm text-gray-500">Click to upload or drag and drop</p>
+                                    <p class="text-xs text-gray-400 mt-1">PNG, JPG, GIF up to 5MB</p>
+                                </div>
+                            </label>
+                            <input type="file" id="product-image" class="hidden" accept="image/*">
+                        </div>
+                        
+                        <div id="image-preview" class="mt-4 hidden">
+                            <p class="text-sm mb-2">Preview:</p>
+                            <div class="relative inline-block">
+                                <img id="preview-image" src="#" alt="Preview" class="h-32 rounded-lg border border-gray-300 dark:border-gray-600">
+                                <button id="remove-image" class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition">
+                                    <i class="fas fa-times text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="reset" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600 transition">
+                            Reset
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition glow-on-hover">
+                            Add Product
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+        
+        <!-- Toast Notification -->
+        <div id="toast" class="toast fixed bottom-4 right-4 glass-card px-6 py-3 rounded-lg shadow-lg hidden">
+            <div class="flex items-center">
+                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                <span id="toast-message">Product added successfully!</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass-card mt-10">
+        <div class="container mx-auto px-4 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">EasyShop</h3>
+                    <p class="text-sm">Your one-stop marketplace for everything you need at competitive prices.</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-sm hover:text-blue-500 transition">Home</a></li>
+                        <li><a href="#" class="text-sm hover:text-blue-500 transition">Products</a></li>
+                        <li><a href="#" class="text-sm hover:text-blue-500 transition">About Us</a></li>
+                        <li><a href="#" class="text-sm hover:text-blue-500 transition">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Customer Service</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-sm hover:text-blue-500 transition">FAQ</a></li>
+                        <li><a href="#" class="text-sm hover:text-blue-500 transition">Shipping Policy</a></li>
+                        <li><a href="#" class="text-sm hover:text-blue-500 transition">Returns & Refunds</a></li>
+                        <li><a href="#" class="text-sm hover:text-blue-500 transition">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contact Us</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center">
+                            <i class="fas fa-map-marker-alt mr-2 text-blue-500"></i>
+                            <span class="text-sm">123 Market St, Tashkent</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-phone-alt mr-2 text-blue-500"></i>
+                            <span class="text-sm">+998 99 123 4567</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-2 text-blue-500"></i>
+                            <span class="text-sm">info@easyshop.com</span>
+                        </li>
+                    </ul>
+                    
+                    <div class="mt-4 flex space-x-4">
+                        <a href="#" class="p-2 bg-gray-200 dark:bg-gray-700 rounded-full hover:bg-blue-500 hover:text-white transition">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="p-2 bg-gray-200 dark:bg-gray-700 rounded-full hover:bg-blue-400 hover:text-white transition">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="p-2 bg-gray-200 dark:bg-gray-700 rounded-full hover:bg-pink-500 hover:text-white transition">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="p-2 bg-gray-200 dark:bg-gray-700 rounded-full hover:bg-red-500 hover:text-white transition">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-200 dark:border-gray-700 mt-8 pt-6 text-center text-sm">
+                <p>&copy; 2023 EasyShop. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Theme toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        });
+        
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Modal handling
+        const loginModal = document.getElementById('login-modal');
+        const registerModal = document.getElementById('register-modal');
+        const closeLogin = document.getElementById('close-login');
+        const closeRegister = document.getElementById('close-register');
+        const loginLinks = document.querySelectorAll('.login-link');
+        const registerLinks = document.querySelectorAll('.register-link');
+        
+        function showModal(modal) {
+            document.body.style.overflow = 'hidden';
+            modal.classList.remove('hidden');
+        }
+        
+        function hideModal(modal) {
+            document.body.style.overflow = '';
+            modal.classList.add('hidden');
+        }
+        
+        loginLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                hideModal(registerModal);
+                showModal(loginModal);
+            });
+        });
+        
+        registerLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                hideModal(loginModal);
+                showModal(registerModal);
+            });
+        });
+        
+        closeLogin.addEventListener('click', () => hideModal(loginModal));
+        closeRegister.addEventListener('click', () => hideModal(registerModal));
+        
+        // Toggle password visibility
+        function setupPasswordToggle(buttonId, inputId) {
+            const button = document.getElementById(buttonId);
+            const input = document.getElementById(inputId);
+            
+            button.addEventListener('click', () => {
+                const isPassword = input.type === 'password';
+                input.type = isPassword ? 'text' : 'password';
+                button.innerHTML = isPassword ? '<i class="far fa-eye-slash"></i>' : '<i class="far fa-eye"></i>';
+            });
+        }
+        
+        setupPasswordToggle('toggle-login-password', 'login-password');
+        setupPasswordToggle('toggle-register-password', 'register-password');
+        
+        // Password strength indicator
+        const passwordInput = document.getElementById('register-password');
+        const passwordStrength = document.getElementById('password-strength');
+        const strengthText = document.getElementById('password-strength-text');
+        const passwordHint = document.getElementById('password-hint');
+        
+        passwordInput.addEventListener('input', () => {
+            const password = passwordInput.value;
+            let strength = 0;
+            
+            // Check password length
+            if (password.length >= 8) strength += 1;
+            if (password.length >= 12) strength += 1;
+            
+            // Check for mixed case
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 1;
+            
+            // Check for numbers
+            if (/\d/.test(password)) strength += 1;
+            
+            // Check for special chars
+            if (/[^a-zA-Z0-9]/.test(password)) strength += 1;
+            
+            // Update strength indicator
+            const strengthBar = passwordStrength.querySelector('div');
+            let strengthColor = '';
+            let strengthMessage = '';
+            
+            if (password.length === 0) {
+                strengthBar.style.width = '0%';
+                strengthText.textContent = 'Password strength: ';
+                passwordHint.classList.add('hidden');
+            } else {
+                passwordHint.classList.remove('hidden');
+                
+                if (strength <= 2) {
+                    strengthBar.style.width = '33%';
+                    strengthBar.style.backgroundColor = '#ef4444'; // red
+                    strengthMessage = 'Weak';
+                } else if (strength <= 4) {
+                    strengthBar.style.width = '66%';
+                    strengthBar.style.backgroundColor = '#f59e0b'; // amber
+                    strengthMessage = 'Medium';
+                } else {
+                    strengthBar.style.width = '100%';
+                    strengthBar.style.backgroundColor = '#10b981'; // emerald
+                    strengthMessage = 'Strong';
+                }
+                
+                strengthText.textContent = `Password strength: ${strengthMessage}`;
+            }
+        });
+        
+        // Form validation
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            // Here you would normally send the data to your backend
+            hideModal(loginModal);
+            showToast('Logged in successfully!');
+        });
+        
+        document.getElementById('register-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            // Here you would normally send the data to your backend
+            hideModal(registerModal);
+            showToast('Account created successfully!');
+        });
+        
+        // Image upload preview
+        const productImage = document.getElementById('product-image');
+        const imagePreview = document.getElementById('image-preview');
+        const previewImage = document.getElementById('preview-image');
+        const removeImage = document.getElementById('remove-image');
+        
+        productImage.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    previewImage.src = event.target.result;
+                    imagePreview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        removeImage.addEventListener('click', () => {
+            productImage.value = '';
+            previewImage.src = '#';
+            imagePreview.classList.add('hidden');
+        });
+        
+        // Product form submission
+        document.getElementById('product-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            // Here you would normally send the data to your backend
+            showToast('Product added successfully!');
+            e.target.reset();
+            imagePreview.classList.add('hidden');
+        });
+        
+        // Toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden');
+            
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+        
+        // Simple routing
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                
+                if (targetElement) {
+                    // Hide all sections first
+                    document.querySelectorAll('main > section').forEach(section => {
+                        section.classList.add('hidden');
+                    });
+                    
+                    // Show the target section
+                    targetElement.classList.remove('hidden');
+                    
+                    // Close mobile menu if open
+                    mobileMenu.classList.add('hidden');
+                    
+                    // Scroll to top
+                    window.scrollTo(0, 0);
+                }
+            });
+        });
+        
+        // Initialize particles.js on homepage
+        if (document.getElementById('particles-js')) {
+            particlesJS('particles-js', {
+                "particles": {
+                    "number": {
+                        "value": 80,
+                        "density": {
+                            "enable": true,
+                            "value_area": 800
+                        }
+                    },
+                    "color": {
+                        "value": "#3b82f6"
+                    },
+                    "shape": {
+                        "type": "circle",
+                        "stroke": {
+                            "width": 0,
+                            "color": "#000000"
+                        },
+                        "polygon": {
+                            "nb_sides": 5
+                        }
+                    },
+                    "opacity": {
+                        "value": 0.3,
+                        "random": false,
+                        "anim": {
+                            "enable": false,
+                            "speed": 1,
+                            "opacity_min": 0.1,
+                            "sync": false
+                        }
+                    },
+                    "size": {
+                        "value": 3,
+                        "random": true,
+                        "anim": {
+                            "enable": false,
+                            "speed": 40,
+                            "size_min": 0.1,
+                            "sync": false
+                        }
+                    },
+                    "line_linked": {
+                        "enable": true,
+                        "distance": 150,
+                        "color": "#3b82f6",
+                        "opacity": 0.2,
+                        "width": 1
+                    },
+                    "move": {
+                        "enable": true,
+                        "speed": 2,
+                        "direction": "none",
+                        "random": false,
+                        "straight": false,
+                        "out_mode": "out",
+                        "bounce": false,
+                        "attract": {
+                            "enable": false,
+                            "rotateX": 600,
+                            "rotateY": 1200
+                        }
+                    }
+                },
+                "interactivity": {
+                    "detect_on": "canvas",
+                    "events": {
+                        "onhover": {
+                            "enable": true,
+                            "mode": "grab"
+                        },
+                        "onclick": {
+                            "enable": true,
+                            "mode": "push"
+                        },
+                        "resize": true
+                    },
+                    "modes": {
+                        "grab": {
+                            "distance": 140,
+                            "line_linked": {
+                                "opacity": 1
+                            }
+                        },
+                        "bubble": {
+                            "distance": 400,
+                            "size": 40,
+                            "duration": 2,
+                            "opacity": 8,
+                            "speed": 3
+                        },
+                        "repulse": {
+                            "distance": 200,
+                            "duration": 0.4
+                        },
+                        "push": {
+                            "particles_nb": 4
+                        },
+                        "remove": {
+                            "particles_nb": 2
+                        }
+                    }
+                },
+                "retina_detect": true
+            });
+        }
+        
+        // Initialize the home section as default
+        document.getElementById('home').classList.remove('hidden');
+    </script>
+</body>
+</html>
